@@ -1,59 +1,56 @@
+from dataclasses import asdict
 from typing import List, Optional
-from uuid import UUID
-from pymongo import MongoClient
-from fastapi import HTTPException
-from pkg.model.book import Book, BookCreated
-
-
+from bson import ObjectId
+from pymongo import ASCENDING
+from pkg.config.mogodb import MongoConnection
+from pkg.model.book import Book
 
 
 
 class BookRepository:
 
-    def __init__(self, string_connection: str, db_name: str):
-        self.client = MongoClient(string_connection, uuidRepresentation='standard')
-        self.db = self.client[db_name]
-        self.collection = self.db['books']
+    def __init__(self, mongo_connection: MongoConnection):
+        self.collection = mongo_connection.database.books
+        self.collection.create_index([('isbn', ASCENDING)], unique = True, name= "isbn_unique")
     
         
-    def create(self, book_create: BookCreated) -> Book:
-        book = Book(**book_create.model_dump())
+    def create(self, book: Book) -> Book:
+        result = self.collection.insert_one(asdict(book))
         
-        book_dict = book.model_dump(by_alias=True, mode='python')
-        self.collection.insert_one(book_dict)
-        
+        book._id  = result.inserted_id
         return book
     
     
-    def find_by_Id(self, book_id: str) -> Optional[Book]:
+    def find_by_Id(self, book_id: ObjectId) -> Optional[Book]:
+        raw_book = self.collection.find_one({'_id': ObjectId(book_id)})
         
-        result = self.collection.find_one({'_id': UUID(book_id)})
+        if raw_book is None:
+            return None
         
-        if result is None:
-            raise HTTPException(status_code =404, detail= "Libro non trovato!")
+        return Book(**raw_book)
         
-        return Book.from_mongo(result)
     
         
     def find_by_author(self, author:str) -> List[Book]:
-        
+        # TO-DO : spostare su opensearch
         results = self.collection.find({'author': {'$regex': author, '$options': 'i'}})
         
-        return [Book.from_mongo(doc) for doc in results]
-    
+        
+        
+        
         
     def find_book_by_quote(self, search_text_quote: str) -> List[Book]:
-   
+        # TO-DO : spostare su opensearch
         result = self.collection.find({
         'quotes': {'$regex': search_text_quote, '$options': 'i'}
         })
     
-        return [Book.from_mongo(doc) for doc in result]
-    
+        return [Book.from_doc(doc) for doc in result]
+
     
         
     def find_by_genre(self, genre: str) -> List[Book]:
-        
+        # TO-DO : spostare su opensearch
         results = self.collection.find({'genre':{'$regex' : genre,'$options': 'i' }})
         
         return [Book.from_mongo(doc) for doc in results]
@@ -70,31 +67,16 @@ class BookRepository:
     
      
         
-    def update(self, book_id: str, update_book: BookCreated) -> Optional[Book]:
+    def update(self, book_id: ObjectId, update_book: Book) -> Book:
     
-   
-        existing = self.find_by_Id(book_id)
-        if not existing:
-            return None
+        self.collection.replace_one({'_id' : book_id}, asdict(update_book))
         
+        return update_book
         
-        result = self.collection.update_one(
-            {'_id': UUID(book_id)}, 
-            {'$set': update_book.model_dump(exclude_unset=True)}  
-        )
-        
-        if result.modified_count > 0:
-            return self.find_by_Id(book_id)
-        
-        return existing
     
         
-    def delete(self, book_id: str) -> bool:
-        result = self.collection.find_one_and_delete({'_id': UUID(book_id)})
-    
-        if result is None:
-            raise HTTPException(status_code=404, detail="Libro non trovato!")
+    def delete(self, book : Book) -> bool:
         
-        return True
-    
-    
+        result = self.collection.delete_one({'_id' : book._id})
+        
+        return result.deleted_count == 1

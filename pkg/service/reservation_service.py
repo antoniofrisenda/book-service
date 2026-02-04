@@ -1,73 +1,65 @@
-from datetime import datetime
-from uuid import UUID, uuid4
-from fastapi import HTTPException
-from pkg.model.reservation import Reservation, ReservationCreated, ReservationUpdate
+from datetime import datetime, timezone
+from bson import ObjectId
+from fastapi import HTTPException, Response
+from pkg.dto.reservation_dto import InsertReservation, ReservationDto
+from pkg.factoty.reservation_factory import model_to_dto
 from pkg.repository.book_repo import BookRepository
 from pkg.repository.reservation_repo import ReservationRepository
 
 
 class ReservationService:
     
-    def __init__(self, repository: ReservationRepository, book_repo= BookRepository):
+    def __init__(self, repository: ReservationRepository, book_repo: BookRepository):
         self.repository = repository
         self.book_repo = book_repo
         
-    def create_reservation(self, book_id: str, user_id: str, start_reservation: datetime, end_reservation: datetime, state: str = "active") -> Reservation:
+    def create_reservation(self, reservation: InsertReservation) -> ReservationDto:
         
-        if start_reservation >= end_reservation:
+        
+        
+        if reservation.start_reservation >= reservation.end_reservation:
             raise HTTPException(
                 status_code=400,
                 detail="La data di inizio deve essere precedente alla fine"
             )
         
-        if start_reservation < datetime.now():
-            raise HTTPException(
-                status_code=400,
-                detail="Non puoi prenotare nel passato"
-            )
+        book = self.book_repo.find_by_Id(reservation.book_id)
         
-        try:
-            self.book_repo.find_by_Id(book_id)
-        except HTTPException:
-            raise HTTPException(status_code=404, detail="Libro non trovato")
+        if book is None:
+            raise HTTPException(status_code=404, detail="Id del libro non trovato")
+            
+        result = self.repository.create(reservation)
         
-        reservation_id = uuid4()
-        
-        reservation = ReservationCreated(
-            book_id=book_id,
-            user_id=user_id,
-            start_reservation=start_reservation,
-            end_reservation=end_reservation,
-            state=state
-        )
-        
-        reservation_id = self.repository.create(reservation, reservation_id)
-        return self.repository.find_by_Id(reservation_id)
+        return model_to_dto(result)
             
     
-    def get_reservation_by_Id(self, reserve_id: UUID) -> Reservation:
+    def get_reservation_by_Id(self, reserve_id: str) -> ReservationDto:
         
-        reservation_founded = self.repository.find_by_Id(reserve_id)
+        reservation = self.repository.find_by_Id(reserve_id)
         
-        return reservation_founded
+        if reservation is None:
+            raise HTTPException(status_code=404, detail="ID prenotazione non trovato")
+        
+        return model_to_dto(reservation)
     
     
     
-    def update_reservation(self, update_reserv: Reservation, reserve_id: UUID) -> str:
+    def update_reservation(self, reserve_id: str):
         
-        update_reservation = self.repository.update(update_reserv, reserve_id)
+        reservation = self.repository.update(reserve_id)
         
-        if update_reservation is True:
-            return "Prenotazione aggiornata con successo!"
-        else:
-            raise HTTPException(status_code=400, detail="Non è stato possibile modificare la prenotzione!") 
+        if reservation is not True:
+            return Response(status_code=404)
+        
+        return Response(status_code=200)
         
         
-    def delete_reservation_by_id(self, reserv_id: UUID) -> str:
+        
+    def delete_reservation_by_id(self, reserv_id: str):
         
         deleted_reservation = self.repository.delete(reserv_id)
         
-        if deleted_reservation is True:
-            return "Prenotazione eliminata con successo!"
-        else:
-            raise HTTPException(status_code=400, detail="Non è stato possibile eliminare la prenotazione")
+        if deleted_reservation is not True:
+            return Response(status_code=400)
+        
+        return Response(status_code=200)

@@ -1,43 +1,43 @@
-from uuid import UUID
-from fastapi import APIRouter, Depends
-from pkg.dependence import Dependency
-from pkg.model.reservation import Reservation, ReservationCreated, ReservationUpdate
+from fastapi import APIRouter, Depends, status
+from pkg.config.mogodb import get_mongoDb
+from pkg.dto.reservation_dto import InsertReservation, ReservationDto
+from pkg.repository.book_repo import BookRepository
+from pkg.repository.reservation_repo import ReservationRepository
 from pkg.service.reservation_service import ReservationService
 
 
 router = APIRouter(prefix='/api/internal/reservations',tags=['Reservations'])
 
 
-@router.post('/v1')
-def create_reservation(reservetion: ReservationCreated,service: ReservationService = Depends(Dependency.get_reservation_service)) -> Reservation:
-    
-     return service.create_reservation(
-        book_id=reservetion.book_id,
-        user_id=reservetion.user_id,
-        start_reservation=reservetion.start_reservation,
-        end_reservation=reservetion.end_reservation,
-    )
+mongo_db = get_mongoDb()
+repo = ReservationRepository(mongo_db)
+book_repo = BookRepository(mongo_db)
+def get_reservation_service() -> ReservationService:
+    return ReservationService(repository = repo, book_repo = book_repo)
 
 
-@router.get('/{id}/v1',)
-def get_reservation_by_id(id: str,service: ReservationService = Depends(Dependency.get_reservation_service)) -> Reservation:
+@router.post('/v1', response_model=ReservationDto, status_code= status.HTTP_201_CREATED)
+def create_reservation(reservetion: InsertReservation ,service: ReservationService = Depends(get_reservation_service)):
     
-    return service.get_reservation_by_Id(UUID(id))
+     return service.create_reservation(reservetion)
+
+@router.get('/{id}/v1',response_model=ReservationDto)
+def get_reservation_by_id(id: str,service: ReservationService = Depends(get_reservation_service)):
+    
+    return service.get_reservation_by_Id(id)
 
 
 @router.patch('/{reservation_id}/v1')
-def update_reservation(
-    reservation_id: UUID,
-    update_reserv: ReservationUpdate,
-    service: ReservationService = Depends(Dependency.get_reservation_service)) -> dict:
+def update_reservation(reservation_id: str,service: ReservationService = Depends(get_reservation_service)):
     
-    message = service.update_reservation(update_reserv, reservation_id)
-    return {"message": message}
+   
+    return service.update_reservation(reservation_id)
 
 
-@router.delete('/{id}/v1',)
-def delete_reservation(reservation_id: str,service: ReservationService = Depends(Dependency.get_reservation_service)) -> dict:
+@router.delete('/{id}/v1')
+def delete_reservation(reservation_id: str,service: ReservationService = Depends(get_reservation_service)):
     
-    message = service.delete_reservation_by_id(UUID(reservation_id))
-    return {"message": message}
+    result = service.delete_reservation_by_id(reservation_id)
+    
+    return result
     

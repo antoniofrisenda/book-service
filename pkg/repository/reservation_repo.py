@@ -1,41 +1,37 @@
+from dataclasses import asdict
+from datetime import datetime, timezone
 from typing import Optional
-from uuid import UUID
-from pymongo import MongoClient
+from bson import ObjectId
 from fastapi import HTTPException
-from pkg.model.reservation import Reservation, ReservationCreated, ReservationUpdate
+from pkg.config.mogodb import MongoConnection
+from pkg.model.reservation import Reservation
 
 
 class ReservationRepository:
     
-    def __init__(self, string_connection: str, db_name: str):
-        self.client = MongoClient(string_connection, uuidRepresentation='standard')
-        self.db = self.client[db_name]
-        self.collection = self.db['reservations']
-        
+    def __init__(self, connection: MongoConnection):
+        self.collection = connection.database.reservations
+        self.client = connection.client
         self.collection.create_index([("book_id", 1), ("start_reservation", 1), ("end_reservation", 1)])
         
-    def find_by_Id(self, reservation_id: UUID) -> Optional[Reservation]:
-        result = self.collection.find_one({'_id': reservation_id})
+    def find_by_Id(self, reservation_id: ObjectId) -> Optional[Reservation]:
+        result = self.collection.find_one({'_id': ObjectId(reservation_id)})
         
-        if result is None:
-            raise HTTPException(status_code =404, detail= "Prenotazione non trovata!")
+        if result is None: return None
         
-        return Reservation.from_mongo(result)
+        return Reservation(**result)
     
-    def create(self, reservation: ReservationCreated, reservation_id: UUID) -> UUID:
-       
-         with self.client.start_session() as session:
-            with session.start_transaction():
-
-                
-                
+    def create(self, reservation: Reservation) -> Reservation:
+        
+        #with self.client.start_session() as session:
+            #with session.start_transaction():
                 conflict = self.collection.find_one({
                     "book_id": reservation.book_id,
-                    "state": {"$in": ["active"]}, 
                     "start_reservation": {"$lt": reservation.end_reservation},
                     "end_reservation": {"$gt": reservation.start_reservation}
-                }, session=session)
+                })
                 
+                                
                 if conflict:
                     raise HTTPException(
                         status_code=409,
@@ -43,41 +39,27 @@ class ReservationRepository:
                     )
                 
                 
-                if not reservation.state:
-                    reservation.state = "active"
-                    
-                    
-                document = reservation.model_dump()
-                document['_id'] = reservation_id 
+                result = self.collection.insert_one(asdict(reservation))
                 
-                
-                result = self.collection.insert_one(document, session=session)
-                
-                
-                
-                return reservation_id
+                reservation._id = result.inserted_id
+                return reservation
             
     
-    def update(self, update_reserv: Reservation, reserve_id: UUID) -> bool:
-        self.find_by_Id(reserve_id)
+    def update(self, reserve_id: ObjectId) -> bool:
         
-        result = self.collection.update_one(
-            {'_id': reserve_id},
-            {'$set': {
-                'start_reservation': update_reserv.start_reservation,
-                'end_reservation': update_reserv.end_reservation,
-            }}
-        )
+        now = datetime.now(timezone.utc)
 
+        result = self.collection.update_one(
+            {"_id": ObjectId(reserve_id)},
+            {"$set": {"end_reservation": now}},
+        )
+        
         return result.modified_count > 0
     
     
     
-    def delete(self, reserve_id: UUID) -> bool:
-        result = self.collection.find_one_and_delete({'_id': reserve_id})
-        
-        if result is None:
-            raise HTTPException(status_code=404, detail="Prenotazione non trovata!")
-        
-        return True
+    def delete(self, reserve_id: ObjectId) -> bool:
+        result = self.collection.delete_one({'_id': ObjectId(reserve_id)})
+
+        return result.deleted_count == 1
 
