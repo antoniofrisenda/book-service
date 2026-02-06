@@ -15,4 +15,4 @@ def get_mongoDb(
     
     client = MongoClient(mongo_url)
     client.admin.command("ping")
-    return MongoConnection(client=client, database=client[db_name])
+    return MongoConnection(client=client, database=(client[str(db_name)]))

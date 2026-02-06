@@ -10,8 +10,3 @@ class Reservation:
     start_reservation: datetime
     end_reservation: datetime
     _id: ObjectId = field(default_factory=ObjectId)
-    
-    
-    @property
-    def start_it(self) -> str:
-        return self.start_reservation.strftime("%d/%m/%Y %H:%M")

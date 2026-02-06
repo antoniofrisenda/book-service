@@ -18,7 +18,6 @@ def get_reservation_service() -> ReservationService:
 
 @router.post('/v1', response_model=ReservationDto, status_code= status.HTTP_201_CREATED)
 def create_reservation(reservetion: InsertReservation ,service: ReservationService = Depends(get_reservation_service)):
-    
      return service.create_reservation(reservetion)
 
 @router.get('/{id}/v1',response_model=ReservationDto)

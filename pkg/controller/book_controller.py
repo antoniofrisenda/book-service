@@ -53,9 +53,7 @@ def update_book(update_id: str, book: UpdateBook, service: BookService = Depends
     return service.update_book_by_Id(update_id, book)
 
 
-@router.delete('/v1')
+@router.delete('/{id}/v1')
 def delete_book(id:str, service: BookService = Depends(get_book_service)):
     
     return service.delete_book_by_Id(id)
-
-

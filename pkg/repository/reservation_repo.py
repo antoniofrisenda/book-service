@@ -1,6 +1,5 @@
 from dataclasses import asdict
 from datetime import datetime, timezone
-from typing import Optional
 from bson import ObjectId
 from fastapi import HTTPException
 from pkg.config.mogodb import MongoConnection
@@ -14,7 +13,7 @@ class ReservationRepository:
         self.client = connection.client
         self.collection.create_index([("book_id", 1), ("start_reservation", 1), ("end_reservation", 1)])
         
-    def find_by_Id(self, reservation_id: ObjectId) -> Optional[Reservation]:
+    def find_by_Id(self, reservation_id: ObjectId) -> Reservation | None:
         result = self.collection.find_one({'_id': ObjectId(reservation_id)})
         
         if result is None: return None

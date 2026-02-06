@@ -1,6 +1,7 @@
+from bson import ObjectId
 from fastapi import HTTPException, Response
 from pkg.dto.reservation_dto import InsertReservation, ReservationDto
-from pkg.factoty.reservation_factory import model_to_dto
+from pkg.factoty.reservation_factory import model_to_dto, insert_to_model
 from pkg.repository.book_repo import BookRepository
 from pkg.repository.reservation_repo import ReservationRepository
 
@@ -16,21 +17,26 @@ class ReservationService:
         if reservation.start_reservation >= reservation.end_reservation:
             raise HTTPException(
                 status_code=400,
-                detail="La data di inizio deve essere precedente alla fine"
+                detail="The start date must be before the end!"
             )
 
         try:
-            book = self.book_repo.find_by_Id(reservation.book_id)
+            book = self.book_repo.find_by_Id(ObjectId(reservation.book_id))
         except Exception as e:
             raise RuntimeError(
                 f"Request failed: create_reservation find_by_Id({reservation.book_id}) -> {type(e).__name__}: {e}"
             )
 
         if book is None:
-            raise HTTPException(status_code=404, detail="Id del libro non trovato")
+            raise HTTPException(status_code=404, detail="ID book not found!")
+        
+        try:
+            new_reservation = insert_to_model(reservation)
+        except Exception as e:
+            raise RuntimeError(f"Request failed: create_reservation insert_to_model {type(e).__name__}: {e}")    
 
         try:
-            result = self.repository.create(reservation)
+            result = self.repository.create(new_reservation)
         except Exception as e:
             raise RuntimeError(
                 f"Request failed: create_reservation create(book_id={reservation.book_id}) -> {type(e).__name__}: {e}"
@@ -44,21 +50,21 @@ class ReservationService:
     def get_reservation_by_Id(self, reserve_id: str) -> ReservationDto:
 
         try:
-            reservation = self.repository.find_by_Id(reserve_id)
+            reservation = self.repository.find_by_Id(ObjectId(reserve_id))
         except Exception as e:
             raise RuntimeError(
                 f"Request failed: get_reservation_by_Id({reserve_id}) -> {type(e).__name__}: {e}"
             )
 
         if reservation is None:
-            raise HTTPException(status_code=404, detail="ID prenotazione non trovato")
+            raise HTTPException(status_code=404, detail="ID reservation not found!")
 
         return model_to_dto(reservation)
 
     def update_reservation(self, reserve_id: str):
 
         try:
-            reservation = self.repository.update(reserve_id)
+            reservation = self.repository.update(ObjectId(reserve_id))
         except Exception as e:
             raise RuntimeError(
                 f"Request failed: update_reservation({reserve_id}) -> {type(e).__name__}: {e}"
@@ -72,7 +78,7 @@ class ReservationService:
     def delete_reservation_by_id(self, reserv_id: str):
 
         try:
-            deleted_reservation = self.repository.delete(reserv_id)
+            deleted_reservation = self.repository.delete(ObjectId(reserv_id))
         except Exception as e:
             raise RuntimeError(
                 f"Request failed: delete_reservation_by_id({reserv_id}) -> {type(e).__name__}: {e}"

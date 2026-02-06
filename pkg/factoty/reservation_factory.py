@@ -1,5 +1,4 @@
-from bson import ObjectId
-from pkg.dto.reservation_dto import ReservationDto
+from pkg.dto.reservation_dto import InsertReservation, ReservationDto
 from pkg.model.reservation import Reservation
 
 
@@ -13,11 +12,10 @@ def model_to_dto(reservation: Reservation) -> ReservationDto:
     )
     
 
-def dto_to_model(reservation: ReservationDto) -> Reservation:
+def insert_to_model(insert: InsertReservation) -> Reservation:
     return Reservation(
-        _id = ObjectId(reservation.id),
-        book_id= ObjectId(reservation.book_id),
-        user_id = ObjectId(reservation.user_id),
-        start_reservation= reservation.start_reservation,
-        end_reservation= reservation.end_reservation,
+        book_id= insert.book_id,
+        user_id = insert.user_id,
+        start_reservation= insert.start_reservation,
+        end_reservation= insert.end_reservation,
     )
