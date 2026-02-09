@@ -3,10 +3,9 @@ venv/
 env/
 ENV/
 
-
 __pycache__/
 *.py[cod]
 *$py.class
-
-
+makefile
+compose.yml
 .env
