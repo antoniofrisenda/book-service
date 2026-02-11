@@ -9,10 +9,9 @@ class MongoConnection:
     database: Database
     
 
-def get_mongoDb(
-    mongo_url=os.getenv('MONGO_URI'),
-    db_name=os.getenv("MONGO_DB_NAME")) -> MongoConnection:
+def get_mongoDb(mongo_url=os.getenv('MONGO_URI'),db_name=os.getenv("MONGO_DB_NAME")) -> MongoConnection:    
+        client = MongoClient(mongo_url)
+        client.admin.command("ping")
+        return MongoConnection(client=client, database=(client[str(db_name)]))
     
-    client = MongoClient(mongo_url)
-    client.admin.command("ping")
-    return MongoConnection(client=client, database=(client[str(db_name)]))
+        

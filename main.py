@@ -1,6 +1,8 @@
 from fastapi import FastAPI
-import uvicorn
+from pkg.config.logger import setup_loguru_logger
 from pkg.controller import book_controller, reservation_controller
+
+setup_loguru_logger()
 
 app = FastAPI(
     

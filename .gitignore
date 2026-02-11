@@ -7,5 +7,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 makefile
-compose.yml
+docker-compose.yml
 .env
+/logs/
+*.log
