@@ -1,6 +1,6 @@
 from dataclasses import asdict
+import logging
 from bson import ObjectId
-from loguru import logger
 from pymongo import ASCENDING
 from pkg.config.mogodb import MongoConnection
 from pkg.model.book import Book
@@ -22,7 +22,7 @@ class BookRepository:
             return book
         
         except Exception as e:
-            logger.error(f"Error with book creation: {e}")
+            logging.error(f"Error with book creation: {e}")
             raise
     
     
@@ -37,8 +37,8 @@ class BookRepository:
             
             return Book(**raw_book)
         except Exception as e:
-            logger.error(f"Error with the research of this book ID: {book_id}: {e}")
-            logger.exception("Full detail of error: ")
+            logging.error(f"Error with the research of this book ID: {book_id}: {e}")
+            logging.exception("Full detail of error: ")
             raise
     
     
@@ -52,8 +52,8 @@ class BookRepository:
             return Book(**result)
         
         except Exception as e:
-            logger.error(f"Error with the research of this book isbn: {isbn}: {e}")
-            logger.exception("Full detail of error:")
+            logging.error(f"Error with the research of this book isbn: {isbn}: {e}")
+            logging.exception("Full detail of error:")
             raise
     
      
@@ -68,8 +68,8 @@ class BookRepository:
             return update_book
             
         except Exception as e:
-            logger.error(f"Error with book update: {e}")
-            logger.exception("Full detail of error:")   
+            logging.error(f"Error with book update: {e}")
+            logging.exception("Full detail of error:")   
             raise
 
     
@@ -84,6 +84,6 @@ class BookRepository:
             return True
             
         except Exception as e:
-            logger.error(f"Error deleting book with ID {deleted_id}: {e}")
-            logger.exception("Full detail of error:")
+            logging.error(f"Error deleting book with ID {deleted_id}: {e}")
+            logging.exception("Full detail of error:")
             raise

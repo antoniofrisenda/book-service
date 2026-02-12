@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, status
-from loguru import logger
 from pkg.config.mogodb import get_mongoDb
 from pkg.dto.reservation_dto import InsertReservation, ReservationDto
 from pkg.repository.book_repo import BookRepository

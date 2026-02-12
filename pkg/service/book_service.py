@@ -1,5 +1,5 @@
+import logging
 from bson import ObjectId
-from loguru import logger
 from fastapi import HTTPException, Response
 from pkg.dto.book_dto import BookDto, InsertBook, UpdateBook
 from pkg.factoty.book_factory import insert_to_model, model_to_dto, update_to_model
@@ -14,64 +14,64 @@ class BookService:
 
 
     def create_book(self, insert_book: InsertBook) -> BookDto:
-        logger.info(f"Creating new book: {insert_book.title}")
+        logging.info(f"Creating new book: {insert_book.title}")
         
         book = self.repository.create(insert_to_model(insert_book))
         
         if book is None:
-            logger.error("Repository returned None for create_book")
+            logging.error("Repository returned None for create_book")
             raise ValueError("Book creation failed")
         
-        logger.info(f"Book created with ID: {book._id}")
+        logging.info(f"Book created with ID: {book._id}")
         return model_to_dto(book)
 
 
     def get_book_by_Id(self, book_id: str) -> BookDto:
-        logger.info(f"Searching book by ID: {book_id}")
+        logging.info(f"Searching book by ID: {book_id}")
         
         
         book_object_id = validate_object_id(book_id, "book ID")
         book = self.repository.find_by_Id(book_object_id)
         
         if book is None:
-            logger.warning(f"Book not found with ID: {book_id}")
+            logging.warning(f"Book not found with ID: {book_id}")
             raise HTTPException(status_code=404, detail="ID not found!")
         
-        logger.info(f"Book found: ID={book_id}")
+        logging.info(f"Book found: ID={book_id}")
         return model_to_dto(book)
 
 
     def get_book_by_isbn(self, isbn: str) -> BookDto:
-        logger.info(f"Searching book by ISBN: {isbn}")
+        logging.info(f"Searching book by ISBN: {isbn}")
         
         book_result = self.repository.find_by_Isbn(isbn)
         
         if book_result is None:
-            logger.warning(f"Book not found with ISBN: {isbn}")
+            logging.warning(f"Book not found with ISBN: {isbn}")
             raise HTTPException(status_code=404, detail="ISBN not found!")
         
-        logger.info(f"Book found: ISBN={isbn}")
+        logging.info(f"Book found: ISBN={isbn}")
         return model_to_dto(book_result)
 
 
     def update_book_by_Id(self, book_id: str, update_book: UpdateBook) -> BookDto:
-        logger.info(f"Updating book with ID: {book_id}")
+        logging.info(f"Updating book with ID: {book_id}")
         
         book_object_id = validate_object_id(book_id, "book ID")
         book = self.repository.find_by_Id(book_object_id)
         
         if book is None:
-            logger.warning(f"Book to update not found: {book_id}")
+            logging.warning(f"Book to update not found: {book_id}")
             raise HTTPException(status_code=404, detail="ID not found!")
         
         new_book = update_to_model(book_id, update_book)
         book_updated = self.repository.update(book._id, new_book)
         
         if book_updated is None:
-            logger.error(f"Repository returned None for update: {book_id}")
+            logging.error(f"Repository returned None for update: {book_id}")
             raise ValueError("Book update failed")
         
-        logger.info(f"Book updated successfully: ID={book_id}")
+        logging.info(f"Book updated successfully: ID={book_id}")
         return model_to_dto(book_updated)
 
 
@@ -81,9 +81,9 @@ class BookService:
         book_deleted = self.repository.delete(ObjectId(book.id))
         
         if book_deleted is None:
-            logger.warning(f"Deletion failed for ID: {id}")
+            logging.warning(f"Deletion failed for ID: {id}")
             return Response(status_code=404)
         
-        logger.info(f"Book deleted successfully: ID={id}")
+        logging.info(f"Book deleted successfully: ID={id}")
         return Response(status_code=200)
 

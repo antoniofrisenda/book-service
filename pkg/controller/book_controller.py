@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from loguru import logger
+import logging
 from pkg.config.mogodb import get_mongoDb
 from pkg.dto.book_dto import BookDto, InsertBook, UpdateBook
 from pkg.repository.book_repo import BookRepository
@@ -21,19 +21,19 @@ def create_book(book: InsertBook, service: BookService = Depends(get_book_servic
 
 @router.get('/author/v1', tags=["TO-DO"], summary="Find books by author")
 def get_by_author(author: str, service: BookService = Depends(get_book_service)):
-    logger.warning(f"GET /author/v1 - Not implemented (author: {author})")
+    logging.warning(f"GET /author/v1 - Not implemented (author: {author})")
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
 @router.get('/genre/v1', tags=["TO-DO"], summary="Find book by genre")
 def get_by_genre(genre: str, service: BookService = Depends(get_book_service)):
-    logger.warning(f"GET /genre/v1 - Not implemented (genre: {genre})")
+    logging.warning(f"GET /genre/v1 - Not implemented (genre: {genre})")
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
 @router.get('/quote/v1', tags=["TO-DO"], summary="Find book by quotes")
 def get_quotes(text_serch: str, service: BookService = Depends(get_book_service)):
-    logger.warning(f"GET /quote/v1 - Not implemented (search: {text_serch})")
+    logging.warning(f"GET /quote/v1 - Not implemented (search: {text_serch})")
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 

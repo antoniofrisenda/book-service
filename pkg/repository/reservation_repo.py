@@ -1,6 +1,6 @@
 from dataclasses import asdict
-from loguru import logger
 from datetime import datetime, timezone
+import logging
 from bson import ObjectId
 from fastapi import HTTPException
 from pkg.config.mogodb import MongoConnection
@@ -24,8 +24,8 @@ class ReservationRepository:
             return Reservation(**result)
         
         except Exception as e:
-            logger.error(f"Error with the research of this reservation ID: {reservation_id}: {e}")
-            logger.exception("Full detail of error:")
+            logging.error(f"Error with the research of this reservation ID: {reservation_id}: {e}")
+            logging.exception("Full detail of error:")
             raise
 
 
@@ -41,7 +41,7 @@ class ReservationRepository:
                     
                                     
                     if conflict:
-                        logger.warning(f"Conflit with {conflict['start_reservation']} and {conflict['end_reservation']}")
+                        logging.warning(f"Conflit with {conflict['start_reservation']} and {conflict['end_reservation']}")
                         raise HTTPException(
                             status_code=409,
                             detail=f"Reservation not allowed from {conflict['start_reservation']} to {conflict['end_reservation']}"
@@ -56,8 +56,8 @@ class ReservationRepository:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Error with reservation creation: {e}")
-            logger.exception("Full detail of error:")
+            logging.error(f"Error with reservation creation: {e}")
+            logging.exception("Full detail of error:")
             raise
 
 
@@ -77,8 +77,8 @@ class ReservationRepository:
             return result.modified_count > 0
         
         except Exception as e:
-            logger.error(f"Error with reservation update: {e}")
-            logger.exception("Full detail of error:")
+            logging.error(f"Error with reservation update: {e}")
+            logging.exception("Full detail of error:")
             raise
         
         
@@ -94,6 +94,6 @@ class ReservationRepository:
             return result.deleted_count == 1
         
         except Exception as e:
-            logger.error(f"Error deleting reservation with ID {reserve_id}: {e}")
-            logger.exception("Full detail of error:")
+            logging.error(f"Error deleting reservation with ID {reserve_id}: {e}")
+            logging.exception("Full detail of error:")
             raise
