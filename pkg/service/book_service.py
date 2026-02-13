@@ -4,7 +4,7 @@ from fastapi import HTTPException, Response
 from pkg.dto.book_dto import BookDto, InsertBook, UpdateBook
 from pkg.factoty.book_factory import insert_to_model, model_to_dto, update_to_model
 from pkg.repository.book_repo import BookRepository
-from pkg.utils.validators import validate_object_id
+from pkg.utils.validators import validate_and_format_isbn, validate_object_id
 
 
 class BookService:
@@ -15,7 +15,12 @@ class BookService:
 
     def create_book(self, insert_book: InsertBook) -> BookDto:
         logging.info(f"Creating new book: {insert_book.title}")
+
+        if self.repository.collection.find_one({'isbn': insert_book.isbn}):
+                raise HTTPException(status_code=401, detail="Duplicate ISBN!")
         
+        
+        insert_book.isbn = validate_and_format_isbn(insert_book.isbn)
         book = self.repository.create(insert_to_model(insert_book))
         
         if book is None:
