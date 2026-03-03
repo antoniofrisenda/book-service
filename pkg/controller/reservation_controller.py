@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Depends, status
+
 from pkg.config.mogodb import get_mongoDb
-from pkg.dto.reservation_dto import InsertReservation, ReservationDto
+from pkg.utils.env_validator import get_env
+from fastapi import APIRouter, Depends, status
 from pkg.repository.book_repo import BookRepository
-from pkg.repository.reservation_repo import ReservationRepository
 from pkg.service.reservation_service import ReservationService
+from pkg.repository.reservation_repo import ReservationRepository
+from pkg.dto.reservation_dto import InsertReservation, ReservationDto
 
 
 router = APIRouter(prefix='/api/internal/reservations',tags=['Reservations'])
 
 
-mongo_db = get_mongoDb()
+mongo_db = get_mongoDb(mongo_url=get_env("MONGO_URI"), db_name=get_env("MONGO_DB_NAME"))
 repo = ReservationRepository(mongo_db)
 book_repo = BookRepository(mongo_db)
 def get_reservation_service() -> ReservationService:

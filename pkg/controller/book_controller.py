@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
 import logging
 from pkg.config.mogodb import get_mongoDb
-from pkg.dto.book_dto import BookDto, InsertBook, UpdateBook
-from pkg.repository.book_repo import BookRepository
+from pkg.utils.env_validator import get_env
 from pkg.service.book_service import BookService
+from pkg.repository.book_repo import BookRepository
+from fastapi import APIRouter, Depends, HTTPException, status
+from pkg.dto.book_dto import BookDto, InsertBook, UpdateBook
 
 
 router = APIRouter(prefix= '/api/internal/books', tags=['Books'])
 
-mongo_db = get_mongoDb()
+mongo_db = get_mongoDb(mongo_url=get_env("MONGO_URI"), db_name=get_env("MONGO_DB_NAME"))
 repo = BookRepository(mongo_db)
 def get_book_service() -> BookService:
     return BookService(repo)
