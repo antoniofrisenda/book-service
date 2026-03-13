@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: book-service
+  template:
+    metadata:
+      labels:
+        app: book-service
+    spec:
+      containers:
+        - name: book-service
+          image: 192.168.1.10:5000/book-service:latest
+          env:
+            - name: MONGO_DB_NAME
+              value: "book_service"
+            - name: MONGO_URI
+              value: "mongodb://root:pass@mongo:27017/book_service?authSource=admin&retryWrites=true&w=majority"
+          ports:
+            - containerPort: 5000
