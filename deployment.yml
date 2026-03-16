@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: book-service
-          image: 192.168.1.10:5000/book-service:latest
+          image: 192.168.1.10:8083/library/book-service:latest
           env:
             - name: MONGO_DB_NAME
               value: "book_service"
