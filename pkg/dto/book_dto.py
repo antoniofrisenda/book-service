@@ -8,6 +8,7 @@ class BookDto:
     genre: str 
     author: str 
     isbn: str
+    price: float
     quotes: list[str] = field(default_factory=list)
 
 
@@ -17,6 +18,7 @@ class InsertBook:
     genre: str
     author: str
     isbn: str
+    price: float
     quotes: list[str] = field(default_factory=list)
 
 
@@ -26,6 +28,7 @@ class UpdateBook:
     genre: str
     author: str
     isbn: str
+    price: float
     quotes: list[str] = field(default_factory=list)
     
 

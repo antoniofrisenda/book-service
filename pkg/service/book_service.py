@@ -18,6 +18,8 @@ class BookService:
 
         if self.repository.collection.find_one({'isbn': insert_book.isbn}):
                 raise HTTPException(status_code=401, detail="Duplicate ISBN!")
+        if insert_book.price <= 0:
+            raise HTTPException(status_code=400, detail="Price must be greater than 0!")
         
         
         insert_book.isbn = validate_and_format_isbn(insert_book.isbn)
@@ -68,6 +70,8 @@ class BookService:
         if book is None:
             logging.warning(f"Book to update not found: {book_id}")
             raise HTTPException(status_code=404, detail="ID not found!")
+        if update_book.price <= 0:
+            raise HTTPException(status_code=400, detail="Price must be greater than 0!")
         
         new_book = update_to_model(book_id, update_book)
         book_updated = self.repository.update(book._id, new_book)
