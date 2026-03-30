@@ -33,7 +33,7 @@ pipeline {
             }
         }
 
-        stage('Push image to docker registry') {
+        stage('Push image to registry') {
             agent { label 'docker' }
             steps {
 
