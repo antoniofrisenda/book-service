@@ -19,6 +19,6 @@ spec:
             - name: MONGO_DB_NAME
               value: "book_service"
             - name: MONGO_URI
-              value: "mongodb://root:pass@mongo:27017/book_service?authSource=admin&retryWrites=true&w=majority"
+              value: "mongodb://root:pass@192.168.1.10:27017/book_service?authSource=admin&retryWrites=true&w=majority"
           ports:
             - containerPort: 5000
