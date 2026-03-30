@@ -49,6 +49,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     sh '''
+                        kubectl config view --raw -o jsonpath='{.clusters[?(@.name=="kind-library")].cluster.server}'; echo
                         kubectl cluster-info --context kind-library
                     '''
                 }
