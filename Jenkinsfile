@@ -44,18 +44,6 @@ pipeline {
             }
         }
 
-        stage('Validate kubernetes profile') {
-            agent { label 'kubectl' }
-            steps {
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                    sh '''
-                        kubectl config view --raw -o jsonpath='{.clusters[?(@.name=="kind-library")].cluster.server}'; echo
-                        kubectl cluster-info --context kind-library
-                    '''
-                }
-            }
-        }
-
         stage('Deploy to Kubernetes') {
             agent { label 'kubectl' }
             steps {
