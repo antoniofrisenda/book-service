@@ -20,7 +20,7 @@ pipeline {
                 sh '''
                     docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
-                        trivy:canary \
+                        aquasec/trivy:0.69.3 \
                         image \
                         --severity CRITICAL,HIGH \
                         --ignore-unfixed \
