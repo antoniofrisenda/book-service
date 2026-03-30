@@ -8,23 +8,48 @@ pipeline {
             steps {
 
                 sh '''
-                    echo "Harbor12345" | docker login 192.168.1.10:8083 --username "admin" --password-stdin
-
                     docker build -t book-service:latest .
-
-                    docker tag book-service:latest 192.168.1.10:8083/library/book-service:latest
-                    docker push 192.168.1.10:8083/library/book-service:latest
                 '''
 
+            }
+        }
+
+        stage('Trivy scan') {
+            agent { label 'docker' }
+            steps {
+                sh '''
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        trivy:canary \
+                        image \
+                        --severity CRITICAL,HIGH \
+                        --ignore-unfixed \
+                        --exit-code 1 \
+                        --pkg-types os,library \
+                        --no-progress \
+                        --show-suppressed \
+                        book-service:latest
+                '''
+            }
+        }
+
+        stage('Push image to docker registry') {
+            agent { label 'docker' }
+            steps {
+
+                sh '''
+                    docker tag book-service:latest 192.168.1.10:5000/book-service:latest
+                    docker push 192.168.1.10:5000/book-service:latest
+                '''
             }
         }
 
         stage('Deploy to Kubernetes') {
             agent { label 'kubectl' }
             steps {
-                withCredentials([file(credentialsId: 'kubectl-config', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     sh '''
-                        kubectl --context kind-library apply -f deployment.yml --validate=false
+                        kubectl --context kind-library apply -f deployment.yml
                         kubectl --context kind-library apply -f service.yml
                         kubectl --context kind-library rollout status deployment/book-service
                     '''
