@@ -49,7 +49,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     sh '''
-                        kubectl --context kind-library apply -f deployment.yml
+                        kubectl --context kind-library apply --validate=false -f deployment.yml
                         kubectl --context kind-library apply -f service.yml
                         kubectl --context kind-library rollout status deployment/book-service
                     '''
