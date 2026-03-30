@@ -10,6 +10,7 @@ def model_to_dto(book: Book) -> BookDto:
         genre= book.genre,
         author= book.author,
         isbn= book.isbn,
+        price= book.price,
         quotes= book.quotes
     )
 
@@ -21,6 +22,7 @@ def update_to_model(book_id: str, update: UpdateBook):
         genre=update.genre,
         author=update.author,
         isbn=update.isbn,
+        price=update.price,
         quotes=update.quotes
     )
     
@@ -31,5 +33,6 @@ def insert_to_model(insert: InsertBook):
         genre=insert.genre,
         author=insert.author,
         isbn=insert.isbn,
+        price=insert.price,
         quotes=insert.quotes
     )
