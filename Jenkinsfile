@@ -15,13 +15,10 @@ pipeline {
         }
 
         stage('Trivy scan') {
-            agent { label 'docker' }
+            agent { label 'trivy' }
             steps {
                 sh '''
-                    docker run --rm \
-                        -v /var/run/docker.sock:/var/run/docker.sock \
-                        aquasec/trivy:0.69.3 \
-                        image \
+                    trivy image \
                         --severity CRITICAL,HIGH \
                         --ignore-unfixed \
                         --exit-code 1 \
