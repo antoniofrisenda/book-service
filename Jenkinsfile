@@ -38,8 +38,8 @@ pipeline {
             steps {
 
                 sh '''
-                    docker tag book-service:latest 192.168.1.10:5000/book-service:latest
-                    docker push 192.168.1.10:5000/book-service:latest
+                    docker tag book-service:latest 192.168.1.10:5000/library/book-service:latest
+                    docker push 192.168.1.10:5000/library/book-service:latest
                 '''
             }
         }
@@ -61,8 +61,8 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     sh '''
-                        kubectl --context kind-library apply --validate=false -f deployment.yml
-                        kubectl --context kind-library apply --validate=false -f service.yml
+                        kubectl --context kind-library apply -f deployment.yml
+                        kubectl --context kind-library apply -f service.yml
                         kubectl --context kind-library rollout status deployment/book-service
                     '''
                 }
