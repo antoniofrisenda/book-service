@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Response, status
 from pkg.config.logger import setup_logging
-from pkg.controller import book_controller, reservation_controller
+from pkg.controller import author_controller, book_controller, reservation_controller, purchase_controller
 
 setup_logging()
 
@@ -12,6 +12,8 @@ app = FastAPI(
 
 app.include_router(book_controller.router)
 app.include_router(reservation_controller.router)
+app.include_router(purchase_controller.router)
+app.include_router(author_controller.router)
 
 @app.get("/healthz")
 def root(response: Response) -> None:
