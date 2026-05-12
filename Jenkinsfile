@@ -38,8 +38,8 @@ pipeline {
             steps {
 
                 sh '''
-                    docker tag book-service:latest 192.168.1.10:5000/library/book-service:latest
-                    docker push 192.168.1.10:5000/library/book-service:latest
+                    docker tag book-service:latest 192.168.10.34:5000/library/book-service:latest
+                    docker push 192.168.10.34:5000/library/book-service:latest
                 '''
             }
         }
