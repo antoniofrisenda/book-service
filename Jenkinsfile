@@ -51,6 +51,7 @@ pipeline {
                     sh '''
                         kubectl --context kind-library apply -f deployment.yml
                         kubectl --context kind-library apply -f service.yml
+                        kubectl --context kind-library rollout restart deployment/book-service
                         kubectl --context kind-library rollout status deployment/book-service
                     '''
                 }
